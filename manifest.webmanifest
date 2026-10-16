@@ -1,6 +1,6 @@
 {
-  "name": "Medathon Study Mode",
-  "short_name": "Study Mode",
+  "name": "Medathon",
+  "short_name": "Medathon",
   "description": "A distraction-free study timer with task list and session tracking.",
   "start_url": "./index.html",
   "scope": "./",
