@@ -1,6 +1,6 @@
 {
   "appId": "africa.medathon.studymode",
-  "appName": "Medathon Study Mode",
+  "appName": "Medathon",
   "webDir": "www",
   "server": {
     "androidScheme": "https"
