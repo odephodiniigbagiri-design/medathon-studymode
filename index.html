@@ -136,11 +136,29 @@ body.focusing #clock{font-size:4rem}
 #nav button{display:grid;justify-items:center;gap:2px;font-size:.72rem;padding:10px 4px 8px}
 #nav svg{width:22px;height:22px}
 #nav button[aria-current=page]{box-shadow:none;color:var(--teal)}
+header{align-items:center}
+.hd{display:flex;align-items:center;gap:10px}
+#avatar{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--paper);padding:0;overflow:hidden;color:var(--ink);cursor:pointer;display:grid;place-items:center;font:600 1rem var(--sans)}
+#avatar img{width:100%;height:100%;object-fit:cover}#avatar.lock{opacity:.4}
+#avatar svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.f{display:grid;gap:12px;margin:12px 0}
+.f input,.f select{width:100%;background:var(--mist);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font:inherit}
+.f select{padding:10px 8px}
+.av-row{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.av-big{width:84px;height:84px;border-radius:50%;background:var(--teal-soft);color:var(--teal);display:grid;place-items:center;font:600 2rem var(--serif);overflow:hidden;flex:none}
+.av-big img{width:100%;height:100%;object-fit:cover}
+.msec{border-top:1px solid var(--line);margin-top:18px;padding-top:6px}
+#gate{position:fixed;inset:0;background:var(--mist);z-index:30;display:grid;place-content:center;gap:12px;padding:30px;text-align:center}
+#gate h2{font:600 1.8rem var(--serif);margin:0}
+#gate input{background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:12px;font:inherit;text-align:center}
+#gate a{color:var(--muted);font-size:.85rem;cursor:pointer;text-decoration:underline}
+#toast{z-index:40}
+#gate{overflow:auto;align-content:center}#gate .f{width:min(88vw,340px);margin:0 auto;text-align:left}
 </style>
 </head>
 <body>
 <main>
-  <header><h1 id="ttl">Medathon</h1><small id="today"></small></header>
+  <header><h1 id="ttl">Medathon</h1><div class="hd"><small id="today"></small><button id="avatar" data-p="menu" aria-label="Menu"></button></div></header>
 
   <div id="pg-home">
     <div class="hero">
@@ -244,6 +262,9 @@ body.focusing #clock{font-size:4rem}
       <p class="muted">Drive under the right anatomy answer. Games unlock during breaks, not during focus blocks.</p>
       <a class="primary linkbtn" href="https://medathon1.vercel.app/" target="_blank" rel="noopener">Play Medathon</a>
     </section>
+  </div>
+<div id="pg-menu" hidden>
+    <section><h2>Menu</h2><div id="menu-body"></div></section>
   </div>
 </main>
 <nav id="nav" aria-label="Sections"><button data-p="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</button><button data-p="study"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Study</button><button data-p="library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>Library</button><button data-p="games"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".8"/><circle cx="18.5" cy="14" r=".8"/></svg>Games</button></nav>
@@ -380,15 +401,15 @@ function show() {
   document.title = p === 'focus' ? `${fmt(left(S.end))} · Study Mode` : 'Medathon';
   checks(); tick();
 }
-const TITLES = { home: 'Medathon', study: 'Medathon Study Mode', library: 'Medathon Library', games: 'Medathon Games' };
+const TITLES = { home: 'Medathon', study: 'Medathon Study Mode', library: 'Medathon Library', games: 'Medathon Games', menu: 'Menu' };
 function applyPage() {
   const f = S && S.phase === 'focus', must = S && ['note', 'review'].includes(S.phase);
   Object.keys(TITLES).forEach(k => $('#pg-' + k).hidden = k !== page);
   $('#ttl').textContent = TITLES[page];
-  document.querySelectorAll('#nav button, .tile, #cta').forEach(b => {
+  document.querySelectorAll('#nav button, .tile, #cta, #avatar').forEach(b => {
     const p = b.dataset.p;
     b.setAttribute('aria-current', p === page ? 'page' : 'false');
-    b.classList.toggle('lock', (p === 'games' && f) || (p !== 'study' && must));
+    b.classList.toggle('lock', ((p === 'games' || p === 'menu') && f) || (p !== 'study' && must));
   });
   const hr = new Date().getHours(), day = new Date().toDateString();
   const todays = data.sessions.filter(x => new Date(x.at).toDateString() === day);
@@ -399,13 +420,14 @@ function applyPage() {
   $('#h-status').textContent = f ? 'A focus block is running.' : live ? 'Your Study Mode session is in progress.' : 'Pick a time, lock in, then recall what you learned.';
   $('#cta').textContent = f ? 'Return to focus' : live ? 'Continue session' : 'Plan a study session';
   if (page === 'library' && window.Library) window.Library.render();
+  if (page === 'menu' && window.Menu) window.Menu.render();
 }
 const navTo = e => {
   const b = e.target.closest('button[data-p]'); if (!b) return;
-  if (b.classList.contains('lock')) return toast(b.dataset.p === 'games' ? 'Games unlock during breaks.' : 'Finish your note first.');
+  if (b.classList.contains('lock')) return toast(S && S.phase === 'focus' ? 'Unlocks during breaks.' : 'Finish your note first.');
   page = b.dataset.p; applyPage(); window.scrollTo(0, 0);
 };
-$('#nav').onclick = navTo; $('#pg-home').onclick = navTo;
+$('header').addEventListener('click', navTo); $('#nav').onclick = navTo; $('#pg-home').onclick = navTo;
 function tick() {
   if (!S) return;
   const pill = $('#pill'); pill.hidden = S.phase !== 'focus';
@@ -459,6 +481,10 @@ if (S && S.phase === 'focus') { if (left(S.end) === 0) toNote(); else strike('Yo
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 })();
 </script>
+<script src="config.js"></script>
+<script src="vendor/supabase.js"></script>
 <script src="library.js"></script>
+<script src="menu.js"></script>
+<script src="auth.js"></script>
 </body>
 </html>
