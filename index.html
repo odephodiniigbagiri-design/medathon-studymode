@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Medathon</title>
-<meta name="theme-color" content="#1f4e5a">
+<meta name="theme-color" content="#0f4d45">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <style>
 :root{
-  --mist:#e6ecef; --paper:#f7f9fa; --ink:#12222b; --muted:#5b6c76;
-  --teal:#1f4e5a; --teal-soft:#cfe0e4; --brick:#a8392a; --line:#cdd7dc;
+  --mist:#f4efe6; --paper:#fffdf9; --ink:#10241f; --muted:#62706b; --gold:#d99a2b;
+  --teal:#0f4d45; --teal-soft:#d9e6e1; --brick:#a8392a; --line:#e2dccf;
   --serif:ui-serif,"Iowan Old Style",Georgia,serif;
   --sans:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
 }
 @media (prefers-color-scheme:dark){
-  :root{--mist:#0f1a20; --paper:#17252d; --ink:#e8eef1; --muted:#93a5af;
-    --teal:#7fc0cc; --teal-soft:#223b44; --brick:#e4826f; --line:#2c414b}
+  :root{--mist:#0c1613; --paper:#14231f; --ink:#eaf1ee; --muted:#8fa39c;
+    --teal:#5fcbb5; --teal-soft:#1f3a33; --brick:#e4826f; --line:#243630}
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
@@ -113,6 +113,29 @@ nav#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--pap
 .hub{display:grid;gap:10px;margin-top:14px}
 .hubbtn{text-align:left;background:var(--mist);border:1px solid var(--line);border-radius:12px;padding:16px;color:var(--ink);font:inherit;cursor:pointer;display:grid;gap:4px}
 .hubbtn strong{font:600 1.05rem var(--sans)}.hubbtn span{color:var(--muted);font-size:.88rem}.hubbtn.lock{opacity:.4}
+h1{font:700 1.3rem var(--serif);letter-spacing:.02em}
+section{border-radius:18px;padding:20px}
+.primary{border-radius:14px}
+body.focusing{--mist:#08110f;--paper:#0e1c18;--ink:#eaf1ee;--muted:#8fa39c;--teal:#e0a53a;--teal-soft:#1f2f2a;--line:#22352f}
+body.focusing #clock{font-size:4rem}
+.hero{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:20px;margin-bottom:14px}
+.hero small{color:var(--muted)}
+.hero h2{font:600 1.8rem/1.15 var(--serif);margin:2px 0 6px}
+.mini{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.mini div{background:var(--mist);border-radius:12px;padding:10px 4px;text-align:center}
+.mini b{display:block;font:500 1.4rem var(--serif)}.mini span{font-size:.72rem;color:var(--muted)}
+.cta{width:100%;background:var(--gold);color:#1a1405;border:0;border-radius:14px;padding:14px;font:700 1rem var(--sans);margin-top:14px;cursor:pointer}
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:16px;text-align:left;display:grid;gap:6px;color:var(--ink);cursor:pointer;font:inherit;align-content:start}
+.tile.big{grid-column:1/-1;background:var(--teal);color:var(--paper);border-color:var(--teal)}
+.tile.big span{color:inherit;opacity:.85}
+.tile svg,#nav svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tile.games svg{stroke:var(--gold)}
+.tile strong{font:600 1rem var(--sans)}.tile span{font-size:.82rem;color:var(--muted)}
+.tile.lock{opacity:.4}
+#nav button{display:grid;justify-items:center;gap:2px;font-size:.72rem;padding:10px 4px 8px}
+#nav svg{width:22px;height:22px}
+#nav button[aria-current=page]{box-shadow:none;color:var(--teal)}
 </style>
 </head>
 <body>
@@ -120,15 +143,18 @@ nav#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--pap
   <header><h1 id="ttl">Medathon</h1><small id="today"></small></header>
 
   <div id="pg-home">
-    <section><h2>Welcome to Medathon</h2>
-      <p class="muted">Study with focus, revise from your library, and play to recharge.</p>
+    <div class="hero">
+      <small id="greet"></small>
+      <h2>Ready to study?</h2>
       <p class="muted" id="h-status"></p>
-      <div class="hub">
-        <button class="hubbtn" data-p="study"><strong>Medathon Study Mode</strong><span>Locked-in sessions with recall notes and scheduled reviews</span></button>
-        <button class="hubbtn" data-p="library"><strong>Medathon Library</strong><span>Summary notes, flashcards and your own files</span></button>
-        <button class="hubbtn" data-p="games"><strong>Medathon Games</strong><span>Play during your breaks</span></button>
-      </div>
-    </section>
+      <div class="mini"><div><b id="h-min">0</b><span>min today</span></div><div><b id="h-n">0</b><span>sessions</span></div><div><b id="h-due">0</b><span>reviews due</span></div></div>
+      <button class="cta" id="cta" data-p="study">Plan a study session</button>
+    </div>
+    <div class="tiles">
+      <button class="tile big" data-p="study"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><strong>Medathon Study Mode</strong><span>Locked-in sessions with recall notes and scheduled reviews</span></button>
+      <button class="tile" data-p="library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg><strong>Medathon Library</strong><span>Notes, flashcards and your files</span></button>
+      <button class="tile games" data-p="games"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".8"/><circle cx="18.5" cy="14" r=".8"/></svg><strong>Medathon Games</strong><span>Play during breaks</span></button>
+    </div>
   </div>
   <div id="pg-study" hidden>
   <section id="v-setup">
@@ -220,7 +246,7 @@ nav#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--pap
     </section>
   </div>
 </main>
-<nav id="nav" aria-label="Sections"><button data-p="home">Home</button><button data-p="study">Study</button><button data-p="library">Library</button><button data-p="games">Games</button></nav>
+<nav id="nav" aria-label="Sections"><button data-p="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-8 9 8v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/></svg>Home</button><button data-p="study"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Study</button><button data-p="library"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h6a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H4z"/><path d="M20 4h-6a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h7z"/></svg>Library</button><button data-p="games"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="11" rx="4"/><path d="M7 10v5M4.5 12.5h5"/><circle cx="16" cy="11" r=".8"/><circle cx="18.5" cy="14" r=".8"/></svg>Games</button></nav>
 <div id="veil" role="alertdialog" aria-live="assertive"><h2>Back to focus</h2><p id="v-msg"></p><button id="resume">Return to focus</button></div>
 <div id="toast" role="status"></div>
 
@@ -359,12 +385,19 @@ function applyPage() {
   const f = S && S.phase === 'focus', must = S && ['note', 'review'].includes(S.phase);
   Object.keys(TITLES).forEach(k => $('#pg-' + k).hidden = k !== page);
   $('#ttl').textContent = TITLES[page];
-  document.querySelectorAll('#nav button, .hubbtn').forEach(b => {
+  document.querySelectorAll('#nav button, .tile, #cta').forEach(b => {
     const p = b.dataset.p;
     b.setAttribute('aria-current', p === page ? 'page' : 'false');
     b.classList.toggle('lock', (p === 'games' && f) || (p !== 'study' && must));
   });
-  $('#h-status').textContent = !S || S.phase === 'done' ? '' : f ? 'A focus block is running.' : 'You have a Study Mode session in progress.';
+  const hr = new Date().getHours(), day = new Date().toDateString();
+  const todays = data.sessions.filter(x => new Date(x.at).toDateString() === day);
+  $('#greet').textContent = hr < 12 ? 'Good morning' : hr < 17 ? 'Good afternoon' : 'Good evening';
+  $('#h-min').textContent = todays.reduce((a, x) => a + x.min, 0); $('#h-n').textContent = todays.length;
+  $('#h-due').textContent = data.notes.filter(n => n.reviewAt && !n.done && n.reviewAt <= Date.now()).length;
+  const live = S && S.phase !== 'done';
+  $('#h-status').textContent = f ? 'A focus block is running.' : live ? 'Your Study Mode session is in progress.' : 'Pick a time, lock in, then recall what you learned.';
+  $('#cta').textContent = f ? 'Return to focus' : live ? 'Continue session' : 'Plan a study session';
   if (page === 'library' && window.Library) window.Library.render();
 }
 const navTo = e => {
