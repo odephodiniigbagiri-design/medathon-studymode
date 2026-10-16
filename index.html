@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Medathon Study Mode</title>
+<title>Medathon</title>
 <meta name="theme-color" content="#1f4e5a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
@@ -97,12 +97,40 @@ a.ghost{text-decoration:none;display:inline-block}
 .revs{list-style:none;margin:0;padding:0}.revs li{border-top:1px solid var(--line);padding:8px 0}
 .revs summary{cursor:pointer}.revs p{white-space:pre-wrap;margin:8px 0}
 .primary{width:100%}.row .primary{width:auto}
+main{padding-bottom:96px}
+nav#nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom);z-index:5}
+#nav button{flex:1;background:none;border:0;color:var(--muted);padding:14px 4px;font:600 .9rem var(--sans);cursor:pointer}
+#nav button[aria-current=page]{color:var(--teal);box-shadow:inset 0 3px 0 var(--teal)}
+#nav button.lock{opacity:.35}
+.pill{position:sticky;top:8px;background:var(--teal);color:var(--paper);border-radius:999px;padding:8px 14px;text-align:center;font-weight:600;font-variant-numeric:tabular-nums;z-index:4;margin-bottom:14px}
+.card{background:var(--mist);border-radius:12px;padding:28px 16px;text-align:center;min-height:130px;display:grid;place-content:center;font:500 1.15rem var(--serif);cursor:pointer;margin:12px 0}
+.linkbtn{display:block;text-align:center;text-decoration:none;margin-top:12px}
+.file{display:flex;gap:8px;align-items:center;border-top:1px solid var(--line);padding:8px 0}
+.file span{flex:1;overflow-wrap:anywhere}
+.viewer img{max-width:100%}.viewer iframe{width:100%;height:70vh;border:0}.viewer pre{white-space:pre-wrap}
+.lib-sec{margin:14px 0 4px;font-weight:600;font-size:.85rem;color:var(--muted)}
+.lib details{border-top:1px solid var(--line);padding:8px 0}.lib summary{cursor:pointer}.lib p{white-space:pre-wrap;margin:8px 0}
+.hub{display:grid;gap:10px;margin-top:14px}
+.hubbtn{text-align:left;background:var(--mist);border:1px solid var(--line);border-radius:12px;padding:16px;color:var(--ink);font:inherit;cursor:pointer;display:grid;gap:4px}
+.hubbtn strong{font:600 1.05rem var(--sans)}.hubbtn span{color:var(--muted);font-size:.88rem}.hubbtn.lock{opacity:.4}
 </style>
 </head>
 <body>
 <main>
-  <header><h1>Medathon Study Mode</h1><small id="today"></small></header>
+  <header><h1 id="ttl">Medathon</h1><small id="today"></small></header>
 
+  <div id="pg-home">
+    <section><h2>Welcome to Medathon</h2>
+      <p class="muted">Study with focus, revise from your library, and play to recharge.</p>
+      <p class="muted" id="h-status"></p>
+      <div class="hub">
+        <button class="hubbtn" data-p="study"><strong>Medathon Study Mode</strong><span>Locked-in sessions with recall notes and scheduled reviews</span></button>
+        <button class="hubbtn" data-p="library"><strong>Medathon Library</strong><span>Summary notes, flashcards and your own files</span></button>
+        <button class="hubbtn" data-p="games"><strong>Medathon Games</strong><span>Play during your breaks</span></button>
+      </div>
+    </section>
+  </div>
+  <div id="pg-study" hidden>
   <section id="v-setup">
     <h2>Plan your study session</h2>
     <div class="grid2">
@@ -176,7 +204,23 @@ a.ghost{text-decoration:none;display:inline-block}
   <section class="hide-focus"><h2>Today</h2>
     <div class="stats"><div><strong id="s-min">0</strong><span>minutes studied</span></div><div><strong id="s-n">0</strong><span>sessions</span></div><div><strong id="s-d">0</strong><span>strikes</span></div></div>
   </section>
+</div>
+  <div id="pg-library" class="lib" hidden>
+    <div id="pill" class="pill" hidden></div>
+    <section><h2>Medathon Library</h2>
+      <div class="presets" id="lib-tabs"><button data-t="notes">Notes</button><button data-t="cards">Flashcards</button><button data-t="files">My files</button></div>
+      <div id="lib-body"></div>
+    </section>
+  </div>
+  <div id="pg-games" hidden>
+    <section><h2>Games</h2>
+      <p><strong>Medathon Racing Quiz</strong></p>
+      <p class="muted">Drive under the right anatomy answer. Games unlock during breaks, not during focus blocks.</p>
+      <a class="primary linkbtn" href="https://medathon1.vercel.app/" target="_blank" rel="noopener">Play Medathon</a>
+    </section>
+  </div>
 </main>
+<nav id="nav" aria-label="Sections"><button data-p="home">Home</button><button data-p="study">Study</button><button data-p="library">Library</button><button data-p="games">Games</button></nav>
 <div id="veil" role="alertdialog" aria-live="assertive"><h2>Back to focus</h2><p id="v-msg"></p><button id="resume">Return to focus</button></div>
 <div id="toast" role="status"></div>
 
@@ -187,6 +231,7 @@ const $ = s => document.querySelector(s), KEY = 'medathon.studymode.v2', C = 2 *
 let data = { tasks: [], notes: [], sessions: [], sess: null };
 try { Object.assign(data, JSON.parse(localStorage.getItem(KEY)) || {}); } catch {}
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} };
+let page = data.sess ? 'study' : 'home';
 let S = data.sess, wake = null, audio = null, lastStrike = 0, toastT;
 const pad = n => String(n).padStart(2, '0');
 const fmt = s => { const h = Math.floor(s / 3600); return (h ? h + ':' : '') + pad(Math.floor(s % 3600 / 60)) + ':' + pad(s % 60); };
@@ -293,6 +338,8 @@ $('#save-rev').onclick = () => {
 /* Render */
 function show() {
   const p = S ? S.phase : 'setup';
+  if (['note', 'review'].includes(p)) page = 'study';
+  applyPage();
   ['setup', 'wait', 'focus', 'note', 'review', 'rest', 'done'].forEach(k => $('#v-' + k).hidden = k !== p);
   document.querySelectorAll('.hide-focus').forEach(e => e.hidden = p === 'focus');
   document.body.classList.toggle('focusing', p === 'focus');
@@ -304,11 +351,32 @@ function show() {
     $('#d-h').textContent = S.result === 'completed' ? 'Session complete' : 'Logged out of Study Mode';
     $('#d-msg').textContent = S.result === 'completed' ? `${S.min} focused minutes with ${S.strikes} strike(s). Well done.` : S.reason;
   }
-  document.title = p === 'focus' ? `${fmt(left(S.end))} · Study Mode` : 'Medathon Study Mode';
+  document.title = p === 'focus' ? `${fmt(left(S.end))} · Study Mode` : 'Medathon';
   checks(); tick();
 }
+const TITLES = { home: 'Medathon', study: 'Medathon Study Mode', library: 'Medathon Library', games: 'Medathon Games' };
+function applyPage() {
+  const f = S && S.phase === 'focus', must = S && ['note', 'review'].includes(S.phase);
+  Object.keys(TITLES).forEach(k => $('#pg-' + k).hidden = k !== page);
+  $('#ttl').textContent = TITLES[page];
+  document.querySelectorAll('#nav button, .hubbtn').forEach(b => {
+    const p = b.dataset.p;
+    b.setAttribute('aria-current', p === page ? 'page' : 'false');
+    b.classList.toggle('lock', (p === 'games' && f) || (p !== 'study' && must));
+  });
+  $('#h-status').textContent = !S || S.phase === 'done' ? '' : f ? 'A focus block is running.' : 'You have a Study Mode session in progress.';
+  if (page === 'library' && window.Library) window.Library.render();
+}
+const navTo = e => {
+  const b = e.target.closest('button[data-p]'); if (!b) return;
+  if (b.classList.contains('lock')) return toast(b.dataset.p === 'games' ? 'Games unlock during breaks.' : 'Finish your note first.');
+  page = b.dataset.p; applyPage(); window.scrollTo(0, 0);
+};
+$('#nav').onclick = navTo; $('#pg-home').onclick = navTo;
 function tick() {
   if (!S) return;
+  const pill = $('#pill'); pill.hidden = S.phase !== 'focus';
+  if (!pill.hidden) pill.textContent = `Focus block ${S.i + 1} of ${S.plan.length} · ${fmt(left(S.end))}`;
   if (S.phase === 'wait') { const r = left(S.start); $('#w-clock').textContent = r ? fmt(r) : 'Now'; $('#begin').disabled = r > 0; }
   if (S.phase === 'focus') {
     const r = left(S.end), tot = S.plan[S.i] * 60;
@@ -351,11 +419,13 @@ function renderStats() {
 }
 
 /* Init */
+window.MS = { data, save, toast };
 $('#today').textContent = new Date().toLocaleDateString([], { weekday: 'long', month: 'short', day: 'numeric' });
 renderTasks(); renderReviews(); renderStats(); setupCheck(); show();
 if (S && S.phase === 'focus') { if (left(S.end) === 0) toNote(); else strike('You reloaded the page.'); }
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 })();
 </script>
+<script src="library.js"></script>
 </body>
 </html>
