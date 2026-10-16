@@ -1,0 +1,16 @@
+{
+  "name": "Medathon Study Mode",
+  "short_name": "Study Mode",
+  "description": "A distraction-free study timer with task list and session tracking.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "any",
+  "background_color": "#e6ecef",
+  "theme_color": "#1f4e5a",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
